@@ -13,6 +13,7 @@ import { healthRouter } from './routes/health.routes.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { boardRouter } from './modules/board/board.routes.js';
 import { columnRouter } from './modules/column/column.routes.js';
+import { cardRouter } from './modules/card/card.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 export function createApp(): Application {
@@ -26,6 +27,7 @@ export function createApp(): Application {
   app.use('/api/auth', authRouter);
   app.use('/api/board', boardRouter);
   app.use('/api/columns', columnRouter);
+  app.use('/api/cards', cardRouter);
 
   // 404 for unmatched routes, then the central error handler (must be last).
   app.use(notFoundHandler);

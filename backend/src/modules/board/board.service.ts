@@ -44,6 +44,11 @@ export async function getBoardForUser(userId: string) {
     include: {
       columns: {
         orderBy: { position: 'asc' },
+        include: {
+          cards: {
+            orderBy: { position: 'asc' },
+          },
+        },
       },
     },
   });

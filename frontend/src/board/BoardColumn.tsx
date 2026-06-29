@@ -1,20 +1,32 @@
 /**
- * A single board column: header with inline rename + delete, and a card area.
+ * A single board column: header with inline rename + delete, and its cards.
  *
- * Rename is an inline editable title (double-click or the edit button); delete
- * asks for confirmation via the parent (FR-8). Cards arrive in Stage 4.
+ * Rename is an inline editable title (double-click or the edit button); column
+ * delete asks for confirmation via the parent (FR-8). Cards render in order
+ * with an add-card control; card actions bubble up to the parent.
  */
 import { useState } from 'react';
 
-import type { Column } from '../lib/boardApi';
+import type { Card, Column } from '../lib/boardApi';
+import { CardItem } from './CardItem';
 
 interface BoardColumnProps {
   column: Column;
   onRename: (id: string, name: string) => void;
   onRequestDelete: (column: Column) => void;
+  onAddCard: (column: Column) => void;
+  onEditCard: (card: Card) => void;
+  onDeleteCard: (card: Card) => void;
 }
 
-export function BoardColumn({ column, onRename, onRequestDelete }: BoardColumnProps) {
+export function BoardColumn({
+  column,
+  onRename,
+  onRequestDelete,
+  onAddCard,
+  onEditCard,
+  onDeleteCard,
+}: BoardColumnProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState(column.name);
 
@@ -80,8 +92,22 @@ export function BoardColumn({ column, onRename, onRequestDelete }: BoardColumnPr
         </div>
       </header>
 
-      <div className="flex-1 p-3">
-        <p className="text-xs text-text-muted">No cards yet.</p>
+      <div className="flex flex-1 flex-col gap-2 p-3">
+        {column.cards.length === 0 ? (
+          <p className="text-xs text-text-muted">No cards yet.</p>
+        ) : (
+          column.cards.map((card) => (
+            <CardItem key={card.id} card={card} onEdit={onEditCard} onDelete={onDeleteCard} />
+          ))
+        )}
+
+        <button
+          type="button"
+          onClick={() => onAddCard(column)}
+          className="mt-1 rounded-card border border-dashed border-border px-3 py-2 text-xs font-medium text-text-muted transition-colors hover:border-primary hover:text-primary"
+        >
+          + Add card
+        </button>
       </div>
     </section>
   );

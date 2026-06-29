@@ -1,0 +1,64 @@
+// Prisma schema for the Kanban Board (see AGENTS.md §3.3).
+//
+// NOTE: the database is SQLite, which does not support native enums. The card
+// `priority` is therefore stored as a String constrained to LOW | MEDIUM | HIGH
+// at the application edge (Zod validation, added in Stage 2+). This keeps the
+// conceptual model from AGENTS.md while staying within SQLite's capabilities.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  board Board?
+}
+
+model Board {
+  id        String   @id @default(cuid())
+  name      String   @default("My Board")
+  createdAt DateTime @default(now())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  columns Column[]
+}
+
+model Column {
+  id        String   @id @default(cuid())
+  name      String
+  position  Int
+  createdAt DateTime @default(now())
+
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  cards Card[]
+
+  @@index([boardId])
+}
+
+model Card {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  priority    String    @default("MEDIUM") // LOW | MEDIUM | HIGH (enforced via Zod)
+  dueDate     DateTime?
+  position    Int
+  createdAt   DateTime  @default(now())
+
+  columnId String
+  column   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+
+  @@index([columnId])
+}
